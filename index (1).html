@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JRV Video to Audio Converter</title>
+    <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --secondary-color: #4ECDC4;
+            --dark-color: #292F36;
+            --light-color: #F7FFF7;
+            --accent-color: #FFE66D;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .app-title {
+            color: var(--primary-color);
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .app-subtitle {
+            color: var(--dark-color);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .main-feature {
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+        }
+        
+        .feature-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .upload-area:hover {
+            border-color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            margin-bottom: 5px;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        #videoPreview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 15px;
+            display: none;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        select, button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        select {
+            background-color: white;
+            color: var(--dark-color);
+            min-width: 150px;
+        }
+        
+        button {
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            font-weight: bold;
+            min-width: 200px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        progress {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+        
+        progress::-webkit-progress-bar {
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        
+        progress::-webkit-progress-value {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 5px;
+        }
+        
+        .status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: white;
+        }
+        
+        .download-btn {
+            display: none;
+            margin-top: 20px;
+            background-color: white;
+            color: var(--primary-color);
+            text-decoration: none;
+            text-align: center;
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: white;
+            background-color: rgba(255, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .file-info {
+            margin-top: 15px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            select, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="app-title">JRV Video to Audio Converter</h1>
+        <p class="app-subtitle">Convert your video files to audio</p>
+    </div>
+    
+    <div class="container">
+        <div class="main-feature">
+            <h2 class="feature-title">Video to Audio Converter</h2>
+            
+            <div id="uploadArea" class="upload-area">
+                <div id="uploadContent">
+                    <div class="upload-icon">🎬</div>
+                    <div class="upload-text">Drag & drop your video file here</div>
+                    <div class="upload-text">or</div>
+                    <div class="upload-text">Click to browse files</div>
+                </div>
+                <video id="videoPreview" controls></video>
+                <div id="fileInfo" class="file-info"></div>
+            </div>
+            
+            <input type="file" id="fileInput" accept="video/*">
+            
+            <div class="controls">
+                <select id="formatSelect">
+                    <option value="mp3">MP3</option>
+                    <option value="wav">WAV</option>
+                    <option value="ogg">OGG</option>
+                    <option value="aac">AAC</option>
+                </select>
+                
+                <button id="convertBtn" disabled>Convert to Audio</button>
+            </div>
+            
+            <div id="progressContainer" class="progress-container">
+                <progress id="progressBar" value="0" max="100"></progress>
+                <div id="status" class="status">Processing...</div>
+            </div>
+            
+            <a id="downloadBtn" class="download-btn" download>Download Audio</a>
+            
+            <div id="error" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            const uploadContent = document.getElementById('uploadContent');
+            const fileInput = document.getElementById('fileInput');
+            const videoPreview = document.getElementById('videoPreview');
+            const fileInfo = document.getElementById('fileInfo');
+            const convertBtn = document.getElementById('convertBtn');
+            const formatSelect = document.getElementById('formatSelect');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const status = document.getElementById('status');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const error = document.getElementById('error');
+            
+            let mediaRecorder = null;
+            let originalFileName = '';
+            
+            // Handle drag and drop events
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'white';
+                uploadArea.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                uploadArea.style.backgroundColor = 'transparent';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                uploadArea.style.backgroundColor = 'transparent';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelection();
+                }
+            });
+            
+            // Handle click to browse files
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', handleFileSelection);
+            
+            function handleFileSelection() {
+                if (fileInput.files.length) {
+                    const file = fileInput.files[0];
+                    
+                    // Check if the file is a video
+                    if (!file.type.startsWith('video/')) {
+                        showError('Please select a video file.');
+                        return;
+                    }
+                    
+                    originalFileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
+                    updateFileInfo(file);
+                    convertBtn.disabled = false;
+                    hideError();
+                    
+                    // Show video preview
+                    videoPreview.style.display = 'block';
+                    videoPreview.src = URL.createObjectURL(file);
+                    uploadContent.style.display = 'none';
+                    
+                    // Reset previous conversion
+                    progressContainer.style.display = 'none';
+                    downloadBtn.style.display = 'none';
+                }
+            }
+            
+            function updateFileInfo(file) {
+                const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                fileInfo.innerHTML = `
+                    <strong>${file.name}</strong><br>
+                    Size: ${fileSize} MB | Type: ${file.type}
+                `;
+            }
+            
+            // Handle conversion
+            convertBtn.addEventListener('click', convertVideoToAudio);
+            
+            function convertVideoToAudio() {
+                if (!fileInput.files.length) return;
+                
+                const file = fileInput.files[0];
+                const format = formatSelect.value;
+                
+                // Show progress
+                progressContainer.style.display = 'block';
+                progressBar.value = 0;
+                status.textContent = 'Processing...';
+                convertBtn.disabled = true;
+                hideError();
+                
+                // Create audio context
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const videoElement = videoPreview;
+                
+                // Set up media source
+                const mediaSource = audioContext.createMediaElementSource(videoElement);
+                const destination = audioContext.createMediaStreamDestination();
+                mediaSource.connect(destination);
+                
+                // Set up recorder
+                const audioChunks = [];
+                mediaRecorder = new MediaRecorder(destination.stream);
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    audioChunks.push(e.data);
+                    
+                    // Update progress based on video playback
+                    const progress = (videoElement.currentTime / videoElement.duration) * 100;
+                    progressBar.value = progress;
+                    status.textContent = `Processing... ${Math.round(progress)}%`;
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: `audio/${format}` });
+                    
+                    // Create download link with JRV prefix
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    downloadBtn.href = audioUrl;
+                    downloadBtn.download = `JRV_${originalFileName}.${format}`;
+                    downloadBtn.style.display = 'block';
+                    
+                    status.textContent = 'Conversion complete!';
+                    convertBtn.disabled = false;
+                };
+                
+                // Start recording
+                mediaRecorder.start(100); // Collect data every 100ms
+                
+                // Play the video to capture audio
+                videoElement.currentTime = 0;
+                videoElement.play().catch(e => {
+                    showError('Error playing video: ' + e.message);
+                    resetConversion();
+                });
+                
+                // Stop recording when video ends
+                videoElement.onended = () => {
+                    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                        mediaRecorder.stop();
+                        mediaSource.disconnect();
+                    }
+                };
+                
+                // Update progress while playing
+                videoElement.ontimeupdate = () => {
+                    const progress = (videoElement.currentTime / videoElement.duration) * 100;
+                    progressBar.value = progress;
+                    status.textContent = `Processing... ${Math.round(progress)}%`;
+                };
+            }
+            
+            function showError(message) {
+                error.textContent = message;
+                error.style.display = 'block';
+            }
+            
+            function hideError() {
+                error.style.display = 'none';
+            }
+            
+            function resetConversion() {
+                convertBtn.disabled = false;
+                progressContainer.style.display = 'none';
+                downloadBtn.style.display = 'none';
+                
+                // Reset video preview if needed
+                if (fileInput.files.length) {
+                    videoPreview.style.display = 'block';
+                    uploadContent.style.display = 'none';
+                } else {
+                    videoPreview.style.display = 'none';
+                    uploadContent.style.display = 'block';
+                    fileInfo.textContent = '';
+                }
+            }
+            
+            // Clean up when leaving the page
+            window.addEventListener('beforeunload', () => {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
